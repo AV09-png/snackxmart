@@ -7,7 +7,6 @@ const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
 const session = require('express-session');
-const https = require('https');
 
 // Load environment variables
 dotenv.config();
@@ -17,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Security middleware
-app.use(helmet());  // Adds various HTTP headers for security
+app.use(helmet());
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
   credentials: true
@@ -50,11 +49,11 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Serve static files
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Ensure data folders exist
-const cartDir = path.join(__dirname, '../data/carts');
-const orderDir = path.join(__dirname, '../data/orders');
+const cartDir = path.join(__dirname, 'data/carts');
+const orderDir = path.join(__dirname, 'data/orders');
 fs.mkdirSync(cartDir, { recursive: true });
 fs.mkdirSync(orderDir, { recursive: true });
 
@@ -150,21 +149,10 @@ app.use((err, req, res, next) => {
 
 // Serve index.html for unknown routes (SPA fallback)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Start server
-if (NODE_ENV === 'production') {
-  // For production, you'll need SSL certificates
-  const privateKey = process.env.SSL_PRIVATE_KEY || fs.readFileSync('path/to/private-key.pem', 'utf8');
-  const certificate = process.env.SSL_CERTIFICATE || fs.readFileSync('path/to/certificate.pem', 'utf8');
-  const credentials = { key: privateKey, cert: certificate };
-
-  https.createServer(credentials, app).listen(PORT, () => {
-    console.log(`✅ Secure server running at https://localhost:${PORT}`);
-  });
-} else {
-  app.listen(PORT, () => {
-    console.log(`✅ Server running at http://localhost:${PORT}`);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`✅ Server running at http://localhost:${PORT}`);
+});
