@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - X SnackSmart</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="cart.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav class="nav-container">
+            <div class="logo">
+                <a href="index.html">
+                    <svg class="logo-svg" viewBox="0 0 300 60" xmlns="http://www.w3.org/2000/svg">
+                        <text class="logo-text">
+                            <tspan class="x-letter" x="10" y="40">X</tspan>
+                            <tspan class="snacksmart-text" x="40" y="40">SNACKSMART</tspan>
+                        </text>
+                        <circle class="logo-dot" cx="28" cy="20" r="3"/>
+                        <path class="logo-underline" d="M40 45 L240 45"/>
+                    </svg>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="index.html#shop">Shop</a>
+                <a href="#brands">Brands</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="cart-page">
+        <div class="container">
+            <div class="cart-header">
+                <h1>Shopping Cart</h1>
+                <span class="cart-count">0 Items</span>
+            </div>
+
+            <div class="cart-content">
+                <div class="cart-items">
+                    <!-- Cart items will be dynamically loaded here -->
+                    <!-- Empty cart state -->
+                    <div class="cart-empty" style="display: none;">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h2>Your cart is empty</h2>
+                        <p>Add some items to your cart and they will appear here</p>
+                        <a href="index.html" class="continue-shopping">Continue Shopping</a>
+                    </div>
+                </div>
+
+                <div class="cart-summary">
+                    <h2>Order Summary</h2>
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span class="subtotal-amount">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span class="shipping-amount">Calculated at checkout</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (13%)</span>
+                        <span class="tax-amount">$0.00</span>
+                    </div>
+                    <div class="promo-code">
+                        <div class="promo-input">
+                            <input type="text" id="promoCode" placeholder="Enter promo code">
+                            <button onclick="applyPromoCode()" class="apply-promo-btn">
+                                <i class="fas fa-tag"></i>
+                                Apply
+                            </button>
+                        </div>
+                        <div class="promo-message"></div>
+                    </div>
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <span class="total-amount">$0.00</span>
+                    </div>
+                    <button onclick="proceedToCheckout()" class="checkout-btn">
+                        Proceed to Checkout
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <div class="payment-methods">
+                        <p>We Accept:</p>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-amex"></i>
+                            <i class="fab fa-cc-paypal"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cart Actions -->
+            <div class="cart-actions">
+                <button onclick="clearCart()" class="clear-cart-btn">
+                    <i class="fas fa-trash"></i>
+                    Clear Cart
+                </button>
+                <button onclick="saveCartForLater()" class="save-cart-btn">
+                    <i class="fas fa-bookmark"></i>
+                    Save for Later
+                </button>
+                <button onclick="shareCart()" class="share-cart-btn">
+                    <i class="fas fa-share-alt"></i>
+                    Share Cart
+                </button>
+            </div>
+
+            <!-- Cart Notifications -->
+            <div id="cartNotification" class="cart-notification"></div>
+
+            <!-- Recently Viewed -->
+            <div class="recently-viewed">
+                <h2>Recently Viewed</h2>
+                <div class="recently-viewed-grid">
+                    <!-- Recently viewed items will be dynamically loaded -->
+                </div>
+            </div>
+
+            <!-- You May Also Like -->
+            <div class="cart-recommendations">
+                <h2>You May Also Like</h2>
+                <div class="recommendations-grid">
+                    <!-- Recommendations will be dynamically loaded -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About X SnackSmart</h3>
+                <p>Your premier destination for global snacks and treats.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#shop">Shop All</a></li>
+                    <li><a href="#new">New Arrivals</a></li>
+                    <li><a href="#deals">Special Deals</a></li>
+                    <li><a href="#contact">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/cart.js"></script>
+</body>
+</html>

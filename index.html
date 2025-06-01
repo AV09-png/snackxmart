@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X SnackSmart - Premium Global Snacks</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav class="nav-container">
+            <div class="logo">
+                <svg class="logo-svg" viewBox="0 0 300 60" xmlns="http://www.w3.org/2000/svg">
+                    <text class="logo-text">
+                        <tspan class="x-letter" x="10" y="40">X</tspan>
+                        <tspan class="snacksmart-text" x="40" y="40">SNACKSMART</tspan>
+                    </text>
+                    <circle class="logo-dot" cx="28" cy="20" r="3"/>
+                    <path class="logo-underline" d="M40 45 L240 45"/>
+                </svg>
+            </div>
+            <div class="nav-links">
+                <a href="#home">Home</a>
+                <div class="dropdown">
+                    <a href="#shop">Shop</a>
+                    <div class="dropdown-content">
+                        <div class="dropdown-section">
+                            <h3>All</h3>
+                            <ul>
+                                <li><a href="#view-all">View All Products</a></li>
+                                <li><a href="#under-1">Products Under $1</a></li>
+                                <li><a href="#farali">Farali Products</a></li>
+                                <li><a href="#no-garlic">No Garlic No Onion</a></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown-section">
+                            <h3>By Brand</h3>
+                            <ul>
+                                <li><a href="brands/balaji.html">Balaji</a></li>
+                                <li><a href="brands/garvi-gujarat.html">Garvi Gujarat</a></li>
+                                <li><a href="brands/kurkure.html">Kurkure</a></li>
+                                <li><a href="brands/mdh.html">MDH Masala</a></li>
+                                <li><a href="brands/gokul.html">Gokul Superstore</a></li>
+                                <li><a href="brands/earth.html">From the Earth</a></li>
+                                <li><a href="brands/raju.html">Raju Namkeen</a></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown-section">
+                            <h3>Other</h3>
+                            <ul>
+                                <li><a href="#papads">Papads</a></li>
+                                <li><a href="#confectionary">Confectionary</a></li>
+                                <li><a href="#mamra">Mamra</a></li>
+                                <li><a href="#poha">Poha Thick</a></li>
+                                <li><a href="#masala">Indian Masala</a></li>
+                                <li><a href="#other">Other</a></li>
+                                <li><a href="#fruits">Fruits</a></li>
+                                <li><a href="#drinks">Drinks</a></li>
+                                <li><a href="#noodles">Noodles</a></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown-section">
+                            <h3>Snacks</h3>
+                            <ul>
+                                <li><a href="#chips">Chips</a></li>
+                                <li><a href="#bhujia">Bhujia</a></li>
+                                <li><a href="#kurkure-snacks">Kurkure</a></li>
+                                <li><a href="#chevdo">Chevdo</a></li>
+                                <li><a href="#candy">Candy</a></li>
+                                <li><a href="#paan">Paan Candies</a></li>
+                                <li><a href="#chakri">Chakri</a></li>
+                                <li><a href="#cha-nasta">Cha-Nasta</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <a href="#brands">Brands</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <div class="nav-icons">
+                <a href="#search"><i class="fas fa-search"></i></a>
+                <a href="cart.html" class="cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">0</span>
+                </a>
+                <a href="#account"><i class="fas fa-user"></i></a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Discover Global Flavors</h1>
+                <p>Premium snacks from around the world, delivered to your doorstep</p>
+                <a href="#shop" class="cta-button">Shop Now</a>
+            </div>
+        </section>
+
+        <section class="featured-categories">
+            <h2>Popular Categories</h2>
+            <div class="category-grid">
+                <!-- Categories will be dynamically loaded -->
+            </div>
+        </section>
+
+        <section class="featured-products">
+            <h2>Trending Now</h2>
+            <div class="product-grid">
+                <div class="product-card" data-product-id="balaji-cream-onion" data-brand="Balaji" data-weight="135g">
+                    <span class="discount-badge">-20%</span>
+                    <div class="product-image">
+                        <img src="images/balaji_cream_and_onion.jpg" alt="Balaji Cream & Onion">
+                        <div class="product-overlay">
+                            <button class="add-to-cart-btn">
+                                <i class="fas fa-shopping-cart"></i>
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-brand">Balaji</div>
+                        <h4>Cream & Onion Chips</h4>
+                        <div class="price-tag">
+                            <span class="current-price">$2.29</span>
+                            <span class="original-price">$2.49</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- More products will be dynamically loaded -->
+            </div>
+        </section>
+
+        <section class="product-listing">
+            <div class="container">
+                <div class="category-tags">
+                    <a href="#all" class="category-tag active">All</a>
+                    <a href="#wafers" class="category-tag">Wafers & Chips</a>
+                    <a href="#bhujia" class="category-tag">Bhujia & Sev</a>
+                    <a href="#traditional" class="category-tag">Traditional</a>
+                    <a href="#masala" class="category-tag">Masala</a>
+                </div>
+
+                <div class="product-grid">
+                    <!-- Products will be dynamically loaded -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About X SnackSmart</h3>
+                <p>Your premier destination for global snacks and treats.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#shop">Shop All</a></li>
+                    <li><a href="#new">New Arrivals</a></li>
+                    <li><a href="#deals">Special Deals</a></li>
+                    <li><a href="#contact">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 X SnackSmart. All rights reserved.</p>
+        </div>
+    </footer>
+    <script src="js/cart.js"></script>
+</body>
+</html> 

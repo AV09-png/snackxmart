@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - X SnackSmart</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="confirmation.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav class="nav-container">
+            <div class="logo">
+                <a href="index.html">
+                    <svg class="logo-svg" viewBox="0 0 300 60" xmlns="http://www.w3.org/2000/svg">
+                        <text class="logo-text">
+                            <tspan class="x-letter" x="10" y="40">X</tspan>
+                            <tspan class="snacksmart-text" x="40" y="40">SNACKSMART</tspan>
+                        </text>
+                        <circle class="logo-dot" cx="28" cy="20" r="3"/>
+                        <path class="logo-underline" d="M40 45 L240 45"/>
+                    </svg>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="confirmation-page">
+        <div class="container">
+            <div class="confirmation-content">
+                <div class="confirmation-header">
+                    <i class="fas fa-check-circle"></i>
+                    <h1>Thank You for Your Order!</h1>
+                    <p>Your order has been successfully placed.</p>
+                </div>
+
+                <div class="order-details">
+                    <div class="order-number">
+                        <h2>Order Number</h2>
+                        <p id="orderNumber"></p>
+                    </div>
+
+                    <div class="confirmation-email">
+                        <p>A confirmation email has been sent to your email address.</p>
+                        <p>Please keep your order number for future reference.</p>
+                    </div>
+
+                    <div class="estimated-delivery">
+                        <h2>Estimated Delivery</h2>
+                        <p id="estimatedDelivery"></p>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h2>What's Next?</h2>
+                    <div class="steps-grid">
+                        <div class="step">
+                            <i class="fas fa-envelope"></i>
+                            <h3>Order Confirmation</h3>
+                            <p>Check your email for order details and tracking information.</p>
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-box"></i>
+                            <h3>Order Processing</h3>
+                            <p>We'll start preparing your order for shipment.</p>
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-truck"></i>
+                            <h3>Shipping</h3>
+                            <p>You'll receive an email when your order ships.</p>
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-home"></i>
+                            <h3>Delivery</h3>
+                            <p>Your order will be delivered to your specified address.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="confirmation-actions">
+                    <a href="index.html" class="primary-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        Continue Shopping
+                    </a>
+                    <button onclick="trackOrder()" class="secondary-btn">
+                        <i class="fas fa-truck"></i>
+                        Track Order
+                    </button>
+                </div>
+
+                <div class="customer-support">
+                    <h2>Need Help?</h2>
+                    <p>Our customer support team is here to assist you.</p>
+                    <div class="support-options">
+                        <a href="mailto:support@xsnacksmart.com" class="support-option">
+                            <i class="fas fa-envelope"></i>
+                            Email Support
+                        </a>
+                        <a href="tel:1-800-SNACKS" class="support-option">
+                            <i class="fas fa-phone"></i>
+                            Call Us
+                        </a>
+                        <a href="#" class="support-option" onclick="openChat()">
+                            <i class="fas fa-comments"></i>
+                            Live Chat
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Get order number from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderNumber = urlParams.get('order');
+        
+        // Display order number
+        document.getElementById('orderNumber').textContent = orderNumber;
+        
+        // Calculate and display estimated delivery
+        const today = new Date();
+        const deliveryDate = new Date(today);
+        deliveryDate.setDate(today.getDate() + 5); // Assuming 5 days delivery
+        
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('estimatedDelivery').textContent = deliveryDate.toLocaleDateString('en-US', options);
+        
+        // Track order function
+        function trackOrder() {
+            // In a real application, this would redirect to a tracking page
+            alert('Tracking functionality will be available soon!');
+        }
+        
+        // Open chat function
+        function openChat() {
+            // In a real application, this would open a chat widget
+            alert('Live chat support will be available soon!');
+        }
+    </script>
+
+    <style>
+        .confirmation-page {
+            padding: 100px 0 50px;
+            background: var(--light-gray);
+            min-height: 100vh;
+        }
+
+        .confirmation-content {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .confirmation-header {
+            margin-bottom: 2rem;
+        }
+
+        .confirmation-header i {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+
+        .confirmation-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .order-details {
+            margin: 2rem 0;
+            padding: 2rem;
+            border: 1px solid #eee;
+            border-radius: 10px;
+        }
+
+        .order-number {
+            margin-bottom: 1.5rem;
+        }
+
+        .order-number p {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .confirmation-email {
+            color: #666;
+            margin: 1.5rem 0;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .step {
+            padding: 1.5rem;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .step i {
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .confirmation-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .confirmation-actions a,
+        .confirmation-actions button {
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .primary-btn {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .primary-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .secondary-btn {
+            background: #eee;
+            color: #666;
+            border: none;
+            cursor: pointer;
+        }
+
+        .secondary-btn:hover {
+            background: #ddd;
+        }
+
+        .customer-support {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+
+        .support-options {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .support-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .support-option:hover {
+            color: var(--accent-color);
+        }
+
+        @media (max-width: 768px) {
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .confirmation-actions {
+                flex-direction: column;
+            }
+
+            .support-options {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</body>
+</html> 
