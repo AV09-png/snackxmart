@@ -1,3 +1,8 @@
+// Check if Firebase is initialized
+if (typeof firebase === 'undefined') {
+    console.error('Firebase is not initialized. Make sure Firebase SDK is loaded.');
+}
+
 // Checkout state
 let checkoutState = {
     currentStep: 1,
@@ -274,16 +279,13 @@ async function handlePlaceOrder() {
         placeOrderBtn.disabled = true;
         placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
         // Generate order number
         const orderNumber = Math.random().toString(36).substr(2, 9).toUpperCase();
         
-        // Store order in admin panel system
-        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+        // Get cart data
         const cart = JSON.parse(localStorage.getItem('checkoutCart') || '{}');
         
+        // Prepare order data
         const orderData = {
             id: orderNumber,
             fullName: `${checkoutState.shippingInfo.firstName} ${checkoutState.shippingInfo.lastName}`,
@@ -295,14 +297,14 @@ async function handlePlaceOrder() {
             total: cart.total || 0,
             subtotal: cart.subtotal || 0,
             tax: cart.tax || 0,
-            timestamp: new Date().toLocaleString(),
+            timestamp: new Date().toISOString(),
             status: 'Pending',
             paymentMethod: checkoutState.paymentInfo.method,
             shippingMethod: checkoutState.shippingInfo.shippingMethod
         };
         
-        orders.push(orderData);
-        localStorage.setItem('orders', JSON.stringify(orders));
+        // Save order to Firebase
+        await database.ref('orders').push(orderData);
         
         // Clear cart
         localStorage.removeItem('cart');
@@ -315,6 +317,7 @@ async function handlePlaceOrder() {
         window.location.href = `order-confirmation.html?order=${orderNumber}`;
         
     } catch (error) {
+        console.error('Error placing order:', error);
         showNotification('Error placing order. Please try again.', 'error');
         placeOrderBtn.disabled = false;
         placeOrderBtn.innerHTML = 'Place Order <i class="fas fa-check"></i>';
