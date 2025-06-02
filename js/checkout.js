@@ -274,6 +274,8 @@ function updateReviewSection() {
 // Handle place order
 async function handlePlaceOrder() {
     try {
+        console.log('Starting order placement...');
+        
         // Show loading state
         const placeOrderBtn = document.getElementById('place-order-btn');
         placeOrderBtn.disabled = true;
@@ -281,9 +283,11 @@ async function handlePlaceOrder() {
         
         // Generate order number
         const orderNumber = Math.random().toString(36).substr(2, 9).toUpperCase();
+        console.log('Generated order number:', orderNumber);
         
         // Get cart data
         const cart = JSON.parse(localStorage.getItem('checkoutCart') || '{}');
+        console.log('Cart data:', cart);
         
         // Prepare order data
         const orderData = {
@@ -303,12 +307,23 @@ async function handlePlaceOrder() {
             shippingMethod: checkoutState.shippingInfo.shippingMethod
         };
         
+        console.log('Order data prepared:', orderData);
+        console.log('Firebase database instance:', database);
+        
         // Save order to Firebase
-        await database.ref('orders').push(orderData);
+        try {
+            console.log('Attempting to save order to Firebase...');
+            const newOrderRef = await database.ref('orders').push(orderData);
+            console.log('Order successfully saved with key:', newOrderRef.key);
+        } catch (firebaseError) {
+            console.error('Firebase save error:', firebaseError);
+            throw firebaseError;
+        }
         
         // Clear cart
         localStorage.removeItem('cart');
         localStorage.removeItem('checkoutCart');
+        console.log('Cart cleared from localStorage');
         
         // Show success message
         showNotification('Order placed successfully!', 'success');
