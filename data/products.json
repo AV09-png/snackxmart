@@ -1,0 +1,40 @@
+{
+  "products": [
+    {
+      "id": "balaji-cream-onion",
+      "brand": "Balaji",
+      "name": "Cream & Onion Chips",
+      "description": "Crispy potato chips with delicious cream and onion flavor",
+      "price": 2.29,
+      "originalPrice": 2.49,
+      "weight": "135g",
+      "category": "chips",
+      "inStock": true,
+      "image": "images/balaji_cream_and_onion.jpg"
+    },
+    {
+      "id": "kurkure-masala",
+      "brand": "Kurkure",
+      "name": "Masala Munch",
+      "description": "Crunchy corn puffs with spicy masala flavor",
+      "price": 1.99,
+      "originalPrice": 1.99,
+      "weight": "100g",
+      "category": "snacks",
+      "inStock": true,
+      "image": "images/kurkure_masala_munch.jpg"
+    },
+    {
+      "id": "garvi-gujarat-khakhra",
+      "brand": "Garvi Gujarat",
+      "name": "Masala Khakhra",
+      "description": "Crispy whole wheat crackers with spicy seasoning",
+      "price": 3.49,
+      "originalPrice": 3.99,
+      "weight": "200g",
+      "category": "traditional",
+      "inStock": true,
+      "image": "images/garvi_gujarat_khakhra.jpg"
+    }
+  ]
+} 

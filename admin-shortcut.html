@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SnackSmart Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
         :root {
             --gradient-1: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
@@ -282,10 +281,6 @@
                 <i class="fas fa-sync-alt" id="refreshIcon"></i>
                 Refresh Stats
             </button>
-            <button class="action-btn" onclick="clearOrders()">
-                <i class="fas fa-file-excel"></i>
-                Export & Clear Orders
-            </button>
             <button class="action-btn" onclick="showNotification('Opening reports dashboard...')">
                 <i class="fas fa-chart-bar"></i>
                 View Reports
@@ -323,64 +318,25 @@
             window.location.href = adminPath;
         }
 
-        function exportToExcel(orders) {
-            const wb = XLSX.utils.book_new();
-            
-            const formattedOrders = orders.map(order => ({
-                'Order ID': order.id || 'N/A',
-                'Customer Name': order.customerName || 'N/A',
-                'Total Amount': order.total ? `$${order.total.toFixed(2)}` : 'N/A',
-                'Status': order.status || 'N/A',
-                'Timestamp': order.timestamp || 'N/A',
-                'Items': order.items ? JSON.stringify(order.items) : 'N/A'
-            }));
-            
-            const ws = XLSX.utils.json_to_sheet(formattedOrders);
-            
-            XLSX.utils.book_append_sheet(wb, ws, "Pending Orders");
-            
-            const date = new Date().toISOString().split('T')[0];
-            const fileName = `pending_orders_${date}.xlsx`;
-            
-            XLSX.writeFile(wb, fileName);
-            
-            showNotification('Pending orders exported to Excel successfully!');
-        }
-
-        function clearOrders() {
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            
-            const pendingOrders = orders.filter(order => order.status === 'Pending');
-            
-            if (pendingOrders.length > 0) {
-                exportToExcel(pendingOrders);
-                
-                const remainingOrders = orders.filter(order => order.status !== 'Pending');
-                localStorage.setItem('orders', JSON.stringify(remainingOrders));
-                
-                refreshStats();
-                
-                showNotification(`${pendingOrders.length} pending orders exported and cleared!`);
-            } else {
-                showNotification('No pending orders to clear!');
-            }
-        }
-
         function refreshStats() {
             const refreshIcon = document.getElementById('refreshIcon');
             refreshIcon.classList.add('loading');
 
+            // Get orders from localStorage
             const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             
+            // Update order count
             const pendingOrders = orders.filter(order => order.status === 'Pending').length;
             document.getElementById('orderCount').textContent = pendingOrders;
 
+            // Calculate today's revenue
             const today = new Date().toLocaleDateString();
             const todayRevenue = orders
                 .filter(order => new Date(order.timestamp).toLocaleDateString() === today)
                 .reduce((sum, order) => sum + (order.total || 0), 0);
             document.getElementById('revenue').textContent = `$${todayRevenue.toFixed(2)}`;
 
+            // Simulate low stock items (random number between 0-5)
             document.getElementById('inventory').textContent = Math.floor(Math.random() * 6);
 
             setTimeout(() => {

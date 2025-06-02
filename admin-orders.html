@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - View Orders</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .order-card {
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border-left: 5px solid #27ae60;
+        }
+        .order-card h3 {
+            margin-top: 0;
+            color: #27ae60;
+        }
+        .order-card p {
+            margin: 5px 0;
+        }
+        .no-orders {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 40px;
+        }
+        .clear-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            float: right;
+        }
+        .clear-btn:hover {
+            background-color: #c0392b;
+        }
+        .refresh-btn {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .refresh-btn:hover {
+            background-color: #2980b9;
+        }
+        .refresh-btn i {
+            animation: none;
+        }
+        .refresh-btn.refreshing i {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .admin-actions {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        #loginForm {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #34495e;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .login-btn {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .login-btn:hover {
+            background-color: #219a52;
+        }
+        .error-message {
+            color: #e74c3c;
+            margin-top: 10px;
+            text-align: center;
+        }
+        #adminContent {
+            display: none;
+        }
+        .order-status {
+            margin-top: 10px;
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: inline-block;
+            font-size: 0.9em;
+        }
+        .status-pending {
+            background-color: #f1c40f;
+            color: #000;
+        }
+        .status-processing {
+            background-color: #3498db;
+            color: #fff;
+        }
+        .status-completed {
+            background-color: #27ae60;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginForm">
+        <h2 style="text-align: center; margin-bottom: 20px;">Admin Login</h2>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter admin password">
+        </div>
+        <button class="login-btn" onclick="login()">Login</button>
+        <p id="errorMessage" class="error-message"></p>
+    </div>
+
+    <div id="adminContent" class="container">
+        <h1>Order Management</h1>
+        <div class="admin-actions">
+            <button id="refreshOrders" class="refresh-btn" onclick="refreshOrders()">
+                <i class="fas fa-sync-alt"></i> Refresh Orders
+            </button>
+            <button id="clearOrders" class="clear-btn">Clear All Orders</button>
+            <button id="logout" class="clear-btn" style="background-color: #7f8c8d;" onclick="logout()">Logout</button>
+        </div>
+        <div id="ordersList"></div>
+    </div>
+
+    <script>
+        // Simple password protection
+        const ADMIN_PASSWORD = 'av09'; // Changed password to av09
+
+        function login() {
+            const password = document.getElementById('password').value;
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                loadOrders();
+            } else {
+                document.getElementById('errorMessage').textContent = 'Incorrect password';
+            }
+        }
+
+        function logout() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('adminContent').style.display = 'none';
+            document.getElementById('password').value = '';
+            document.getElementById('errorMessage').textContent = '';
+        }
+
+        function loadOrders() {
+            const ordersList = document.getElementById('ordersList');
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+
+            if (orders.length === 0) {
+                ordersList.innerHTML = '<div class="no-orders">No orders found</div>';
+                return;
+            }
+
+            ordersList.innerHTML = orders.map((order, index) => `
+                <div class="order-card">
+                    <h3>Order #${index + 1} - ${order.timestamp}</h3>
+                    <p><strong>Customer Name:</strong> ${order.fullName}</p>
+                    <p><strong>Email:</strong> ${order.email}</p>
+                    <p><strong>Phone:</strong> ${order.phone}</p>
+                    <p><strong>Delivery Address:</strong> ${order.address}</p>
+                    ${order.deliveryInstructions ? `<p><strong>Delivery Instructions:</strong> ${order.deliveryInstructions}</p>` : ''}
+                    ${order.items ? `
+                        <div class="order-items">
+                            <h4>Order Items:</h4>
+                            <ul style="list-style: none; padding: 0;">
+                                ${order.items.map(item => `
+                                    <li style="margin-bottom: 5px;">
+                                        ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                            <p><strong>Subtotal:</strong> $${order.subtotal ? order.subtotal.toFixed(2) : '0.00'}</p>
+                            <p><strong>Tax:</strong> $${order.tax ? order.tax.toFixed(2) : '0.00'}</p>
+                            <p><strong>Total:</strong> $${order.total ? order.total.toFixed(2) : '0.00'}</p>
+                        </div>
+                    ` : ''}
+                    <div class="order-status status-${order.status ? order.status.toLowerCase() : 'pending'}">
+                        Status: ${order.status || 'Pending'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function refreshOrders() {
+            const refreshBtn = document.getElementById('refreshOrders');
+            refreshBtn.classList.add('refreshing');
+            
+            // Add a small delay to show the refresh animation
+            setTimeout(() => {
+                loadOrders();
+                refreshBtn.classList.remove('refreshing');
+                showNotification('Orders refreshed successfully!');
+            }, 500);
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.backgroundColor = '#2ecc71';
+            notification.style.color = 'white';
+            notification.style.padding = '10px 20px';
+            notification.style.borderRadius = '5px';
+            notification.style.zIndex = '1000';
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        document.getElementById('clearOrders').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear all orders? This cannot be undone.')) {
+                localStorage.removeItem('orders');
+                loadOrders();
+            }
+        });
+
+        // Handle Enter key in password field
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html> 

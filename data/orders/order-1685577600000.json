@@ -1,0 +1,37 @@
+{
+    "id": "1685577600000",
+    "userId": "demo-user",
+    "date": "2024-01-01T10:00:00.000Z",
+    "items": [
+        {
+            "id": "balaji-cream-onion",
+            "name": "Cream & Onion Chips",
+            "price": 2.29,
+            "quantity": 2,
+            "image": "images/balaji_cream_and_onion.jpg"
+        },
+        {
+            "id": "kurkure-masala",
+            "name": "Masala Munch",
+            "price": 1.99,
+            "quantity": 1,
+            "image": "images/kurkure_masala_munch.jpg"
+        }
+    ],
+    "subtotal": 6.57,
+    "tax": 0.53,
+    "shipping": 5.00,
+    "total": 12.10,
+    "shippingInfo": {
+        "fullName": "John Doe",
+        "email": "john@example.com",
+        "address": "123 Main St",
+        "city": "Anytown",
+        "state": "ST",
+        "zipCode": "12345"
+    },
+    "paymentInfo": {
+        "cardNumber": "****4242",
+        "expiryDate": "12/25"
+    }
+} 

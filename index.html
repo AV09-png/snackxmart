@@ -109,7 +109,14 @@
         <section class="featured-products">
             <h2>Trending Now</h2>
             <div class="product-grid">
-                <div class="product-card" data-product-id="balaji-cream-onion" data-brand="Balaji" data-weight="135g">
+                <div class="product-card" 
+                    data-product-id="balaji-cream-onion" 
+                    data-name="Cream & Onion Chips"
+                    data-price="2.29"
+                    data-original-price="2.49"
+                    data-brand="Balaji" 
+                    data-weight="135g"
+                    data-image="images/balaji_cream_and_onion.jpg">
                     <span class="discount-badge">-20%</span>
                     <div class="product-image">
                         <img src="images/balaji_cream_and_onion.jpg" alt="Balaji Cream & Onion">
@@ -178,6 +185,30 @@
             <p>&copy; 2024 X SnackSmart. All rights reserved.</p>
         </div>
     </footer>
+    <div id="cartNotification" class="cart-notification"></div>
     <script src="js/cart.js"></script>
+    <script>
+        // Initialize cart functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCart();
+            
+            // Add click event listeners to all add-to-cart buttons
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const productCard = e.target.closest('.product-card');
+                    const product = {
+                        id: productCard.dataset.productId,
+                        name: productCard.dataset.name,
+                        price: parseFloat(productCard.dataset.price),
+                        originalPrice: parseFloat(productCard.dataset.originalPrice),
+                        image: productCard.dataset.image,
+                        brand: productCard.dataset.brand,
+                        weight: productCard.dataset.weight
+                    };
+                    addToCart(product);
+                });
+            });
+        });
+    </script>
 </body>
 </html> 

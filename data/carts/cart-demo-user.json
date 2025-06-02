@@ -1,0 +1,21 @@
+{
+    "items": [
+        {
+            "id": "balaji-cream-onion",
+            "name": "Cream & Onion Chips",
+            "price": 2.29,
+            "quantity": 2,
+            "image": "images/balaji_cream_and_onion.jpg"
+        },
+        {
+            "id": "kurkure-masala",
+            "name": "Masala Munch",
+            "price": 1.99,
+            "quantity": 1,
+            "image": "images/kurkure_masala_munch.jpg"
+        }
+    ],
+    "subtotal": 6.57,
+    "tax": 0.53,
+    "total": 7.10
+} 
