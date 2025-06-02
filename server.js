@@ -1,11 +1,11 @@
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 const session = require('express-session');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -31,11 +31,23 @@ const authenticateAdmin = (req, res, next) => {
   }
 };
 
-// Ensure data folders exist
-const cartDir = path.join(__dirname, '../data/carts');
-const orderDir = path.join(__dirname, '../data/orders');
-fs.mkdirSync(cartDir, { recursive: true });
-fs.mkdirSync(orderDir, { recursive: true });
+// Ensure data directory exists
+async function initializeDataDirectory() {
+    const dataDir = path.join(__dirname, 'data');
+    try {
+        await fs.mkdir(dataDir, { recursive: true });
+        const ordersPath = path.join(dataDir, 'orders.json');
+        
+        try {
+            await fs.access(ordersPath);
+        } catch {
+            // File doesn't exist, create it
+            await fs.writeFile(ordersPath, JSON.stringify({ orders: [] }, null, 2));
+        }
+    } catch (error) {
+        console.error('Error initializing data directory:', error);
+    }
+}
 
 // Admin login route
 app.post('/api/admin/login', (req, res) => {
@@ -108,11 +120,50 @@ app.get('/api/orders/:orderId', (req, res) => {
   }
 });
 
+// Save order endpoint
+app.post('/api/save-order', async (req, res) => {
+    try {
+        const orderData = req.body;
+        const ordersPath = path.join(__dirname, 'data', 'orders.json');
+        
+        // Read existing orders
+        let ordersFile = await fs.readFile(ordersPath, 'utf8');
+        let orders = JSON.parse(ordersFile);
+        
+        // Add new order
+        orders.orders.push(orderData);
+        
+        // Save back to file
+        await fs.writeFile(ordersPath, JSON.stringify(orders, null, 2));
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error saving order:', error);
+        res.status(500).json({ error: 'Failed to save order' });
+    }
+});
+
+// Get orders endpoint
+app.get('/api/orders', async (req, res) => {
+    try {
+        const ordersPath = path.join(__dirname, 'data', 'orders.json');
+        const ordersFile = await fs.readFile(ordersPath, 'utf8');
+        const orders = JSON.parse(ordersFile);
+        res.json(orders);
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({ error: 'Failed to fetch orders' });
+    }
+});
+
 // Serve index.html for unknown routes (SPA fallback)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
+// Initialize data directory and start server
+initializeDataDirectory().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server running at http://localhost:${PORT}`);
+    });
 });

@@ -33,4 +33,7 @@ logs
 
 # Build output
 dist/
-build/ 
+build/
+
+# Config files with sensitive data
+js/config.js 

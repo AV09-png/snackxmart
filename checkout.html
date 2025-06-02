@@ -335,76 +335,7 @@
 
     <div id="checkout-notification" class="checkout-notification"></div>
 
-    <!-- Add Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
-
-    <script>
-        function saveCustomerInfo() {
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
-            const address = document.getElementById('address').value;
-            const city = document.getElementById('city').value;
-            const province = document.getElementById('province').value;
-            const postalCode = document.getElementById('postalCode').value;
-            const deliveryInstructions = document.getElementById('deliveryInstructions').value;
-            
-            // Save full address
-            const fullAddress = `${address}, ${city}, ${province} ${postalCode}`;
-            
-            localStorage.setItem('customerName', `${firstName} ${lastName}`);
-            localStorage.setItem('customerEmail', email);
-            localStorage.setItem('customerPhone', phone);
-            localStorage.setItem('customerAddress', fullAddress);
-            localStorage.setItem('deliveryInstructions', deliveryInstructions);
-        }
-
-        // Load saved customer info if available
-        window.addEventListener('load', function() {
-            const savedName = localStorage.getItem('customerName');
-            const savedEmail = localStorage.getItem('customerEmail');
-            const savedPhone = localStorage.getItem('customerPhone');
-            const savedAddress = localStorage.getItem('customerAddress');
-            const savedInstructions = localStorage.getItem('deliveryInstructions');
-
-            if (savedName) {
-                const [firstName, lastName] = savedName.split(' ');
-                document.getElementById('firstName').value = firstName || '';
-                document.getElementById('lastName').value = lastName || '';
-            }
-            if (savedEmail) document.getElementById('email').value = savedEmail;
-            if (savedPhone) document.getElementById('phone').value = savedPhone;
-            if (savedAddress) {
-                const addressParts = savedAddress.split(', ');
-                if (addressParts.length >= 3) {
-                    document.getElementById('address').value = addressParts[0];
-                    document.getElementById('city').value = addressParts[1];
-                    const provincePostal = addressParts[2].split(' ');
-                    document.getElementById('province').value = provincePostal[0];
-                    document.getElementById('postalCode').value = provincePostal[1];
-                }
-            }
-            if (savedInstructions) document.getElementById('deliveryInstructions').value = savedInstructions;
-        });
-
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyALV5u18IN8lkzN1ZtzQcTsWBPxwPcMQDk",
-            authDomain: "x-snacksmart-orders.firebaseapp.com",
-            databaseURL: "https://x-snacksmart-orders-default-rtdb.firebaseio.com",
-            projectId: "x-snacksmart-orders",
-            storageBucket: "x-snacksmart-orders.firebasestorage.app",
-            messagingSenderId: "1043970616375",
-            appId: "1:1043970616375:web:7279d5f93ebfb6cb6fa3b2",
-            measurementId: "G-347WD6B7C2"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-    </script>
+    <!-- Scripts -->
     <script src="js/checkout.js"></script>
 </body>
 </html> 

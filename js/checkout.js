@@ -308,16 +308,41 @@ async function handlePlaceOrder() {
         };
         
         console.log('Order data prepared:', orderData);
-        console.log('Firebase database instance:', database);
-        
-        // Save order to Firebase
+
+        // Save order to localStorage
+        const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        existingOrders.push(orderData);
+        localStorage.setItem('orders', JSON.stringify(existingOrders));
+        console.log('Order saved to localStorage');
+
         try {
-            console.log('Attempting to save order to Firebase...');
-            const newOrderRef = await database.ref('orders').push(orderData);
-            console.log('Order successfully saved with key:', newOrderRef.key);
-        } catch (firebaseError) {
-            console.error('Firebase save error:', firebaseError);
-            throw firebaseError;
+            // Fetch existing orders from the JSON file
+            const response = await fetch('/data/orders.json');
+            if (!response.ok) {
+                throw new Error('Failed to fetch orders file');
+            }
+            const allOrders = await response.json();
+            
+            // Add new order
+            allOrders.orders.push(orderData);
+
+            // Save updated orders back to the file
+            const saveResponse = await fetch('/api/save-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            if (!saveResponse.ok) {
+                throw new Error('Failed to save order to server');
+            }
+
+            console.log('Order saved to server');
+        } catch (error) {
+            console.error('Error saving order to server:', error);
+            // Continue with the order process even if server save fails
         }
         
         // Clear cart
@@ -348,6 +373,56 @@ function editSection(section) {
     }
     updateStepDisplay();
 }
+
+// Save customer information
+function saveCustomerInfo() {
+    const firstName = document.getElementById('firstName').value;
+    const lastName = document.getElementById('lastName').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    const address = document.getElementById('address').value;
+    const city = document.getElementById('city').value;
+    const province = document.getElementById('province').value;
+    const postalCode = document.getElementById('postalCode').value;
+    const deliveryInstructions = document.getElementById('deliveryInstructions').value;
+    
+    // Save full address
+    const fullAddress = `${address}, ${city}, ${province} ${postalCode}`;
+    
+    localStorage.setItem('customerName', `${firstName} ${lastName}`);
+    localStorage.setItem('customerEmail', email);
+    localStorage.setItem('customerPhone', phone);
+    localStorage.setItem('customerAddress', fullAddress);
+    localStorage.setItem('deliveryInstructions', deliveryInstructions);
+}
+
+// Load saved customer info if available
+window.addEventListener('load', function() {
+    const savedName = localStorage.getItem('customerName');
+    const savedEmail = localStorage.getItem('customerEmail');
+    const savedPhone = localStorage.getItem('customerPhone');
+    const savedAddress = localStorage.getItem('customerAddress');
+    const savedInstructions = localStorage.getItem('deliveryInstructions');
+
+    if (savedName) {
+        const [firstName, lastName] = savedName.split(' ');
+        document.getElementById('firstName').value = firstName || '';
+        document.getElementById('lastName').value = lastName || '';
+    }
+    if (savedEmail) document.getElementById('email').value = savedEmail;
+    if (savedPhone) document.getElementById('phone').value = savedPhone;
+    if (savedAddress) {
+        const addressParts = savedAddress.split(', ');
+        if (addressParts.length >= 3) {
+            document.getElementById('address').value = addressParts[0];
+            document.getElementById('city').value = addressParts[1];
+            const provincePostal = addressParts[2].split(' ');
+            document.getElementById('province').value = provincePostal[0];
+            document.getElementById('postalCode').value = provincePostal[1];
+        }
+    }
+    if (savedInstructions) document.getElementById('deliveryInstructions').value = savedInstructions;
+});
 
 // Initialize checkout
 document.addEventListener('DOMContentLoaded', () => {

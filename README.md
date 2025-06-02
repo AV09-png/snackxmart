@@ -1,76 +1,80 @@
 # X SnackSmart
 
-A modern e-commerce platform for premium global snacks.
+A modern e-commerce website for snacks and beverages, with a secure admin panel for order management.
 
 ## Features
 
-- Browse and search global snacks
+- Modern and responsive design
 - Shopping cart functionality
-- Order placement
-- Responsive design
-- Category filtering
-- Product discounts
+- Secure checkout process
+- Admin panel for order management
+- Cross-device order synchronization using GitHub Issues
+- Order export functionality
 
-## Setup
+## Setup Instructions
 
-1. Install dependencies:
-```bash
-npm install
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/av09-png/xsnackmart.git
+   cd xsnackmart
+   ```
 
-2. Start the server:
-```bash
-npm start
-```
+2. Set up GitHub configuration:
+   - Copy `js/config.template.js` to `js/config.js`
+   - Create a GitHub Personal Access Token:
+     1. Go to GitHub Settings > Developer settings > Personal access tokens
+     2. Click "Generate new token (classic)"
+     3. Give it a name (e.g., "SnackSmart Orders")
+     4. Select the `repo` scope
+     5. Click "Generate token"
+     6. Copy the token
+   - Update `js/config.js` with your token and repository information:
+     ```javascript
+     const config = {
+         githubToken: 'YOUR_GITHUB_TOKEN',
+         githubRepo: 'your-username/your-repository',
+         githubApiUrl: 'https://api.github.com'
+     };
+     ```
 
-For development with auto-reload:
-```bash
-npm run dev
-```
+3. Deploy to GitHub Pages:
+   - Go to repository Settings > Pages
+   - Set source branch to `main`
+   - Set folder to `/ (root)`
+   - Click Save
 
-The application will be available at http://localhost:3000
+4. Access the website:
+   - Main website: `https://your-username.github.io/your-repository`
+   - Admin panel: `https://your-username.github.io/your-repository/admin-orders.html`
 
-## Project Structure
+## Admin Access
 
-```
-x-snacksmart/
-├── public/
-│   ├── index.html
-│   ├── styles.css
-│   ├── images/
-│   └── js/
-│       ├── products.js
-│       └── cart.js
-├── data/
-│   ├── products.json
-│   ├── orders/
-│   └── carts/
-└── server.js
-```
+- Access the admin panel at `/admin-orders.html`
+- Default password: `av09`
 
-## API Endpoints
+## Order Management
 
-- `GET /api/products` - Get all products
-- `GET /api/cart/:userId` - Get user's cart
-- `POST /api/cart/:userId` - Update user's cart
-- `POST /api/orders` - Place a new order
-- `GET /api/orders/:orderId` - Get order details
+Orders are stored in two places:
+1. Browser's localStorage (for local access)
+2. GitHub Issues (for cross-device access)
 
-## Technologies Used
-
-- Node.js
-- Express.js
-- Vanilla JavaScript
-- HTML5
-- CSS3
-- Font Awesome Icons
+The admin panel combines orders from both sources and removes duplicates.
 
 ## Development
 
-1. The server uses a file-based storage system for simplicity
-2. Cart and order data are stored in JSON files
-3. Static files are served from the `public` directory
+To modify the website:
+1. Clone the repository
+2. Make your changes
+3. Test locally using a web server
+4. Commit and push changes
+5. GitHub Pages will automatically update
+
+## Security Notes
+
+- Keep your GitHub token secure and never commit it to the repository
+- Change the admin password in `admin-orders.html` before deployment
+- Consider implementing proper authentication for production use
 
 ## License
 
-MIT 
+MIT License - Feel free to use and modify for your own projects. 
