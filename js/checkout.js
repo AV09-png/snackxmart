@@ -269,9 +269,6 @@ function updateReviewSection() {
 // Handle place order
 async function handlePlaceOrder() {
     try {
-        // Here you would typically send the order to your backend
-        // For now, we'll simulate a successful order
-        
         // Show loading state
         const placeOrderBtn = document.getElementById('place-order-btn');
         placeOrderBtn.disabled = true;
@@ -282,6 +279,30 @@ async function handlePlaceOrder() {
         
         // Generate order number
         const orderNumber = Math.random().toString(36).substr(2, 9).toUpperCase();
+        
+        // Store order in admin panel system
+        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+        const cart = JSON.parse(localStorage.getItem('checkoutCart') || '{}');
+        
+        const orderData = {
+            id: orderNumber,
+            fullName: `${checkoutState.shippingInfo.firstName} ${checkoutState.shippingInfo.lastName}`,
+            email: checkoutState.shippingInfo.email,
+            phone: checkoutState.shippingInfo.phone,
+            address: `${checkoutState.shippingInfo.address}, ${checkoutState.shippingInfo.city}, ${checkoutState.shippingInfo.province} ${checkoutState.shippingInfo.postalCode}`,
+            deliveryInstructions: checkoutState.shippingInfo.deliveryInstructions || '',
+            items: cart.items || [],
+            total: cart.total || 0,
+            subtotal: cart.subtotal || 0,
+            tax: cart.tax || 0,
+            timestamp: new Date().toLocaleString(),
+            status: 'Pending',
+            paymentMethod: checkoutState.paymentInfo.method,
+            shippingMethod: checkoutState.shippingInfo.shippingMethod
+        };
+        
+        orders.push(orderData);
+        localStorage.setItem('orders', JSON.stringify(orders));
         
         // Clear cart
         localStorage.removeItem('cart');

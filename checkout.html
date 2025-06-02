@@ -355,27 +355,6 @@
             localStorage.setItem('customerPhone', phone);
             localStorage.setItem('customerAddress', fullAddress);
             localStorage.setItem('deliveryInstructions', deliveryInstructions);
-
-            // Store order in admin panel system
-            const cart = JSON.parse(localStorage.getItem('checkoutCart') || '{}');
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            
-            const orderData = {
-                fullName: `${firstName} ${lastName}`,
-                email: email,
-                phone: phone,
-                address: fullAddress,
-                deliveryInstructions: deliveryInstructions,
-                items: cart.items || [],
-                total: cart.total || 0,
-                subtotal: cart.subtotal || 0,
-                tax: cart.tax || 0,
-                timestamp: new Date().toLocaleString(),
-                status: 'Pending'
-            };
-            
-            orders.push(orderData);
-            localStorage.setItem('orders', JSON.stringify(orders));
         }
 
         // Load saved customer info if available

@@ -199,24 +199,6 @@ function proceedToCheckout() {
     // Save cart state
     localStorage.setItem('checkoutCart', JSON.stringify(cart));
 
-    // Store order in admin panel system
-    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const orderData = {
-        fullName: localStorage.getItem('customerName') || 'Guest Customer',
-        email: localStorage.getItem('customerEmail') || 'Not provided',
-        phone: localStorage.getItem('customerPhone') || 'Not provided',
-        address: localStorage.getItem('customerAddress') || 'Not provided',
-        items: cart.items,
-        total: cart.total,
-        subtotal: cart.subtotal,
-        tax: cart.tax,
-        timestamp: new Date().toLocaleString(),
-        status: 'Pending'
-    };
-    
-    orders.push(orderData);
-    localStorage.setItem('orders', JSON.stringify(orders));
-    
     // Redirect to checkout page
     window.location.href = 'checkout.html';
 }
