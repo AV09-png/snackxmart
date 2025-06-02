@@ -174,65 +174,89 @@
     </div>
 
     <script>
-        // Simple password protection
-        const ADMIN_PASSWORD = 'av09'; // Changed password to av09
-
-        function login() {
+        async function login() {
             const password = document.getElementById('password').value;
-            if (password === ADMIN_PASSWORD) {
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('adminContent').style.display = 'block';
-                loadOrders();
-            } else {
-                document.getElementById('errorMessage').textContent = 'Incorrect password';
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('adminContent').style.display = 'block';
+                    loadOrders();
+                } else {
+                    document.getElementById('errorMessage').textContent = 'Invalid password';
+                }
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = 'Login failed. Please try again.';
             }
         }
 
-        function logout() {
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('adminContent').style.display = 'none';
-            document.getElementById('password').value = '';
-            document.getElementById('errorMessage').textContent = '';
+        async function logout() {
+            try {
+                await fetch('/api/admin/logout', {
+                    method: 'POST'
+                });
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('adminContent').style.display = 'none';
+                document.getElementById('password').value = '';
+                document.getElementById('errorMessage').textContent = '';
+            } catch (error) {
+                console.error('Logout failed:', error);
+            }
         }
 
-        function loadOrders() {
-            const ordersList = document.getElementById('ordersList');
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/admin/orders');
+                if (response.ok) {
+                    const orders = await response.json();
+                    displayOrders(orders);
+                } else if (response.status === 401) {
+                    // Session expired or unauthorized
+                    document.getElementById('loginForm').style.display = 'block';
+                    document.getElementById('adminContent').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Failed to load orders:', error);
+            }
+        }
 
+        function displayOrders(orders) {
+            const ordersList = document.getElementById('ordersList');
             if (orders.length === 0) {
                 ordersList.innerHTML = '<div class="no-orders">No orders found</div>';
                 return;
             }
 
-            ordersList.innerHTML = orders.map((order, index) => `
-                <div class="order-card">
-                    <h3>Order #${index + 1} - ${order.timestamp}</h3>
-                    <p><strong>Customer Name:</strong> ${order.fullName}</p>
-                    <p><strong>Email:</strong> ${order.email}</p>
-                    <p><strong>Phone:</strong> ${order.phone}</p>
-                    <p><strong>Delivery Address:</strong> ${order.address}</p>
-                    ${order.deliveryInstructions ? `<p><strong>Delivery Instructions:</strong> ${order.deliveryInstructions}</p>` : ''}
-                    ${order.items ? `
+            ordersList.innerHTML = orders
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .map(order => `
+                    <div class="order-card">
+                        <h3>Order #${order.id}</h3>
+                        <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
+                        <p><strong>Customer:</strong> ${order.customerName}</p>
+                        <p><strong>Email:</strong> ${order.email}</p>
+                        <p><strong>Total:</strong> $${order.total.toFixed(2)}</p>
                         <div class="order-items">
-                            <h4>Order Items:</h4>
-                            <ul style="list-style: none; padding: 0;">
+                            <strong>Items:</strong>
+                            <ul>
                                 ${order.items.map(item => `
-                                    <li style="margin-bottom: 5px;">
-                                        ${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}
-                                    </li>
+                                    <li>${item.name} x ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}</li>
                                 `).join('')}
                             </ul>
-                            <p><strong>Subtotal:</strong> $${order.subtotal ? order.subtotal.toFixed(2) : '0.00'}</p>
-                            <p><strong>Tax:</strong> $${order.tax ? order.tax.toFixed(2) : '0.00'}</p>
-                            <p><strong>Total:</strong> $${order.total ? order.total.toFixed(2) : '0.00'}</p>
                         </div>
-                    ` : ''}
-                    <div class="order-status status-${order.status ? order.status.toLowerCase() : 'pending'}">
-                        Status: ${order.status || 'Pending'}
                     </div>
-                </div>
-            `).join('');
+                `).join('');
         }
+
+        // Refresh orders periodically
+        setInterval(loadOrders, 30000); // Refresh every 30 seconds
 
         function refreshOrders() {
             const refreshBtn = document.getElementById('refreshOrders');
