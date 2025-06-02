@@ -282,39 +282,68 @@
             document.getElementById('syncMessage').style.display = 'block';
             
             try {
-                // Get orders from server
-                const response = await fetch('/api/orders');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch orders from server');
-                }
-                const serverData = await response.json();
-                
-                // Get orders from localStorage
-                const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-                
-                // Combine orders and remove duplicates
-                const allOrdersMap = new Map();
-                
-                // Add server orders
-                serverData.orders.forEach(order => {
-                    allOrdersMap.set(order.id, { ...order, source: 'server' });
-                });
-                
-                // Add local orders (only if not already present)
-                localOrders.forEach(order => {
-                    if (!allOrdersMap.has(order.id)) {
-                        allOrdersMap.set(order.id, { ...order, source: 'local' });
+                // Get orders from GitHub issues
+                const response = await fetch(`${config.githubApiUrl}/repos/${config.githubRepo}/issues?state=all&labels=order`, {
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Authorization': `token ${config.githubToken}`
                     }
                 });
+
+                if (!response.ok) {
+                    throw new Error(`GitHub API error: ${await response.text()}`);
+                }
+
+                const issues = await response.json();
+                console.log('GitHub issues fetched:', issues.length);
+
+                // Parse orders from GitHub issues
+                const githubOrders = issues.map(issue => {
+                    try {
+                        const jsonMatch = issue.body.match(/\`\`\`json\n([\s\S]*?)\n\`\`\`/);
+                        if (jsonMatch) {
+                            const orderData = JSON.parse(jsonMatch[1]);
+                            return {
+                                ...orderData,
+                                source: 'github',
+                                issueNumber: issue.number,
+                                status: issue.state === 'open' ? 'Pending' : 'Completed'
+                            };
+                        }
+                        return null;
+                    } catch (error) {
+                        console.error('Error parsing issue:', error);
+                        return null;
+                    }
+                }).filter(order => order !== null);
+
+                // Get orders from localStorage
+                const localOrders = JSON.parse(localStorage.getItem('orders') || '[]')
+                    .map(order => ({ ...order, source: 'local' }));
+
+                // Combine and deduplicate orders
+                const orderMap = new Map();
                 
-                // Convert map back to array and sort by date
-                allOrders = Array.from(allOrdersMap.values())
+                // Add GitHub orders first
+                githubOrders.forEach(order => {
+                    orderMap.set(order.id, order);
+                });
+
+                // Add local orders (only if not already present)
+                localOrders.forEach(order => {
+                    if (!orderMap.has(order.id)) {
+                        orderMap.set(order.id, order);
+                    }
+                });
+
+                // Convert to array and sort by date
+                allOrders = Array.from(orderMap.values())
                     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                
+
                 console.log('Total orders loaded:', allOrders.length);
             } catch (error) {
                 console.error('Error loading orders:', error);
-                // Fallback to local orders only
+                // Fallback to local orders
                 allOrders = JSON.parse(localStorage.getItem('orders') || '[]')
                     .map(order => ({ ...order, source: 'local' }));
             }

@@ -309,52 +309,101 @@ async function handlePlaceOrder() {
         
         console.log('Order data prepared:', orderData);
 
-        // Save order to localStorage
-        const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-        existingOrders.push(orderData);
-        localStorage.setItem('orders', JSON.stringify(existingOrders));
-        console.log('Order saved to localStorage');
-
         try {
-            // Fetch existing orders from the JSON file
-            const response = await fetch('/data/orders.json');
-            if (!response.ok) {
-                throw new Error('Failed to fetch orders file');
-            }
-            const allOrders = await response.json();
+            console.log('Creating order in GitHub...');
             
-            // Add new order
-            allOrders.orders.push(orderData);
+            // Create GitHub issue for the order
+            const issueTitle = `Order #${orderNumber}`;
+            const issueBody = `
+### Order Details
+- **Order ID:** ${orderNumber}
+- **Customer:** ${checkoutState.shippingInfo.firstName} ${checkoutState.shippingInfo.lastName}
+- **Email:** ${checkoutState.shippingInfo.email}
+- **Phone:** ${checkoutState.shippingInfo.phone}
+- **Address:** ${checkoutState.shippingInfo.address}, ${checkoutState.shippingInfo.city}, ${checkoutState.shippingInfo.province} ${checkoutState.shippingInfo.postalCode}
+${checkoutState.shippingInfo.deliveryInstructions ? `- **Delivery Instructions:** ${checkoutState.shippingInfo.deliveryInstructions}` : ''}
+- **Date:** ${new Date().toLocaleString()}
 
-            // Save updated orders back to the file
-            const saveResponse = await fetch('/api/save-order', {
+### Items
+${cart.items.map(item => `- ${item.name} x ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}`).join('\n')}
+
+### Totals
+- **Subtotal:** $${cart.subtotal.toFixed(2)}
+- **Tax:** $${cart.tax.toFixed(2)}
+- **Total:** $${cart.total.toFixed(2)}
+
+### Payment Details
+- **Method:** ${checkoutState.paymentInfo.method}
+- **Shipping Method:** ${checkoutState.shippingMethod}
+
+\`\`\`json
+${JSON.stringify({
+    id: orderNumber,
+    fullName: `${checkoutState.shippingInfo.firstName} ${checkoutState.shippingInfo.lastName}`,
+    email: checkoutState.shippingInfo.email,
+    phone: checkoutState.shippingInfo.phone,
+    address: `${checkoutState.shippingInfo.address}, ${checkoutState.shippingInfo.city}, ${checkoutState.shippingInfo.province} ${checkoutState.shippingInfo.postalCode}`,
+    items: cart.items,
+    subtotal: cart.subtotal,
+    tax: cart.tax,
+    total: cart.total,
+    timestamp: new Date().toISOString(),
+    paymentMethod: checkoutState.paymentInfo.method,
+    shippingMethod: checkoutState.shippingMethod
+}, null, 2)}
+\`\`\``;
+
+            const response = await fetch(`${config.githubApiUrl}/repos/${config.githubRepo}/issues`, {
                 method: 'POST',
                 headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Authorization': `token ${config.githubToken}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(orderData)
+                body: JSON.stringify({
+                    title: issueTitle,
+                    body: issueBody,
+                    labels: ['order']
+                })
             });
 
-            if (!saveResponse.ok) {
-                throw new Error('Failed to save order to server');
+            if (!response.ok) {
+                throw new Error(`GitHub API error: ${await response.text()}`);
             }
 
-            console.log('Order saved to server');
+            // Save to localStorage as backup
+            const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+            existingOrders.push({
+                id: orderNumber,
+                fullName: `${checkoutState.shippingInfo.firstName} ${checkoutState.shippingInfo.lastName}`,
+                email: checkoutState.shippingInfo.email,
+                phone: checkoutState.shippingInfo.phone,
+                address: `${checkoutState.shippingInfo.address}, ${checkoutState.shippingInfo.city}, ${checkoutState.shippingInfo.province} ${checkoutState.shippingInfo.postalCode}`,
+                items: cart.items,
+                subtotal: cart.subtotal,
+                tax: cart.tax,
+                total: cart.total,
+                timestamp: new Date().toISOString(),
+                paymentMethod: checkoutState.paymentInfo.method,
+                shippingMethod: checkoutState.shippingMethod,
+                source: 'local'
+            });
+            localStorage.setItem('orders', JSON.stringify(existingOrders));
+            
+            // Clear cart
+            localStorage.removeItem('cart');
+            localStorage.removeItem('checkoutCart');
+            
+            // Show success message
+            showNotification('Order placed successfully!', 'success');
+            
+            // Redirect to order confirmation
+            window.location.href = `order-confirmation.html?order=${orderNumber}`;
+            
         } catch (error) {
-            console.error('Error saving order to server:', error);
-            // Continue with the order process even if server save fails
+            console.error('Error placing order:', error);
+            showNotification('Error placing order. Please try again.', 'error');
         }
-        
-        // Clear cart
-        localStorage.removeItem('cart');
-        localStorage.removeItem('checkoutCart');
-        console.log('Cart cleared from localStorage');
-        
-        // Show success message
-        showNotification('Order placed successfully!', 'success');
-        
-        // Redirect to order confirmation
-        window.location.href = `order-confirmation.html?order=${orderNumber}`;
         
     } catch (error) {
         console.error('Error placing order:', error);
