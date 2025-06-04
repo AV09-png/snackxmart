@@ -281,12 +281,15 @@ async function handlePlaceOrder() {
         placeOrderBtn.disabled = true;
         placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         
-        // Get cart data
+        // Validate cart data
         const cart = JSON.parse(localStorage.getItem('checkoutCart') || '{}');
+        if (!cart.items || cart.items.length === 0) {
+            throw new Error('Cart is empty');
+        }
         console.log('Cart data:', cart);
         
         // Get customer ID from the most recent save
-        const customerResponse = await fetch('http://localhost:3000/api/save-customer', {
+        const customerResponse = await fetch('/api/save-customer', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -305,9 +308,18 @@ async function handlePlaceOrder() {
             })
         });
 
+        if (!customerResponse.ok) {
+            throw new Error('Failed to save customer information: ' + (await customerResponse.text()));
+        }
+
         const customerResult = await customerResponse.json();
         if (!customerResult.success) {
-            throw new Error('Failed to save customer information');
+            throw new Error('Failed to save customer information: ' + customerResult.message);
+        }
+
+        // Validate required data
+        if (!checkoutState.shippingInfo || !checkoutState.paymentInfo) {
+            throw new Error('Missing shipping or payment information');
         }
 
         // Prepare order data
@@ -323,16 +335,31 @@ async function handlePlaceOrder() {
         
         console.log('Order data prepared:', orderData);
 
-        // Place order
-        const response = await fetch('http://localhost:3000/api/place-order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(orderData)
-        });
+        // Place order with retry logic
+        let retries = 3;
+        let orderResponse;
+        while (retries > 0) {
+            try {
+                orderResponse = await fetch('/api/place-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                break;
+            } catch (error) {
+                retries--;
+                if (retries === 0) throw error;
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+            }
+        }
 
-        const result = await response.json();
+        if (!orderResponse.ok) {
+            throw new Error('Server error: ' + (await orderResponse.text()));
+        }
+
+        const result = await orderResponse.json();
         if (!result.success) {
             throw new Error(result.message || 'Error placing order');
         }
@@ -349,7 +376,19 @@ async function handlePlaceOrder() {
         
     } catch (error) {
         console.error('Error placing order:', error);
-        showNotification('Error placing order. Please try again.', 'error');
+        let errorMessage = 'Error placing order. ';
+        
+        if (error.message.includes('Cart is empty')) {
+            errorMessage += 'Your cart is empty. Please add items before checking out.';
+        } else if (error.message.includes('Missing shipping or payment')) {
+            errorMessage += 'Please complete all required shipping and payment information.';
+        } else if (error.message.includes('Server error')) {
+            errorMessage += 'Server error occurred. Please try again later.';
+        } else {
+            errorMessage += 'Please try again or contact support if the issue persists.';
+        }
+        
+        showNotification(errorMessage, 'error');
         const placeOrderBtn = document.getElementById('place-order-btn');
         placeOrderBtn.disabled = false;
         placeOrderBtn.innerHTML = 'Place Order <i class="fas fa-check"></i>';

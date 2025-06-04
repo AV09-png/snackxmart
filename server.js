@@ -215,47 +215,100 @@ app.post('/api/place-order', async (req, res) => {
     try {
         const orderData = req.body;
         
-        // Generate unique order number
-        const orderNumber = Math.random().toString(36).substr(2, 9).toUpperCase();
-        orderData.orderNumber = orderNumber;
+        // Validate required fields
+        const requiredFields = ['customerId', 'items', 'subtotal', 'tax', 'total', 'shippingMethod', 'paymentMethod'];
+        const missingFields = requiredFields.filter(field => !orderData[field]);
+        
+        if (missingFields.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Missing required fields: ${missingFields.join(', ')}`
+            });
+        }
 
-        // Insert order into database
-        const result = await client.query(
-            `INSERT INTO orders (
-                order_number,
-                customer_id,
-                items,
-                subtotal,
-                tax,
-                total,
-                shipping_method,
-                payment_method,
-                status
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
-            [
-                orderNumber,
-                orderData.customerId,
-                JSON.stringify(orderData.items),
-                orderData.subtotal,
-                orderData.tax,
-                orderData.total,
-                orderData.shippingMethod,
-                orderData.paymentMethod,
-                'pending'
-            ]
+        // Validate numeric values
+        if (isNaN(orderData.subtotal) || isNaN(orderData.tax) || isNaN(orderData.total)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid numeric values for subtotal, tax, or total'
+            });
+        }
+
+        // Validate items array
+        if (!Array.isArray(orderData.items) || orderData.items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Order must contain at least one item'
+            });
+        }
+
+        // Validate customer exists
+        const customerResult = await client.query(
+            'SELECT id FROM customers WHERE id = $1',
+            [orderData.customerId]
         );
 
-        res.status(201).json({
-            success: true,
-            orderNumber: orderNumber,
-            message: 'Order placed successfully'
-        });
+        if (customerResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Customer not found'
+            });
+        }
+
+        // Start transaction
+        await client.query('BEGIN');
+
+        try {
+            // Generate unique order number with timestamp and random string
+            const timestamp = new Date().getTime().toString(36);
+            const random = Math.random().toString(36).substr(2, 5);
+            const orderNumber = `${timestamp}-${random}`.toUpperCase();
+
+            // Insert order into database
+            const result = await client.query(
+                `INSERT INTO orders (
+                    order_number,
+                    customer_id,
+                    items,
+                    subtotal,
+                    tax,
+                    total,
+                    shipping_method,
+                    payment_method,
+                    status
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, order_number`,
+                [
+                    orderNumber,
+                    orderData.customerId,
+                    JSON.stringify(orderData.items),
+                    orderData.subtotal,
+                    orderData.tax,
+                    orderData.total,
+                    orderData.shippingMethod,
+                    orderData.paymentMethod,
+                    'pending'
+                ]
+            );
+
+            // Commit transaction
+            await client.query('COMMIT');
+
+            res.status(201).json({
+                success: true,
+                orderNumber: result.rows[0].order_number,
+                message: 'Order placed successfully'
+            });
+        } catch (err) {
+            // Rollback transaction on error
+            await client.query('ROLLBACK');
+            throw err;
+        }
     } catch (err) {
         console.error('Error placing order:', err.message);
         res.status(500).json({
             success: false,
             message: 'Error placing order',
-            details: err.message
+            details: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
         });
     } finally {
         client.release();
