@@ -3,6 +3,8 @@ node_modules/
 
 # Environment variables
 .env
+.env.*
+!.env.example
 
 # IDE files
 .vscode/
@@ -22,6 +24,8 @@ pids
 # Database files
 *.sqlite
 *.sqlite3
+data/
+database/
 
 # OS generated files
 .DS_Store
@@ -32,12 +36,16 @@ pids
 ehthumbs.db
 Thumbs.db
 
-# Windows shortcuts
-*.lnk
-
 # Build output
 dist/
 build/
 
+# Firebase
+.firebase/
+firebase-debug.log*
+
 # Config files with sensitive data
-js/config.js 
+js/config.js
+
+# Shortcuts
+*.lnk 
