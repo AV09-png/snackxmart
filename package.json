@@ -8,10 +8,16 @@
     "dev": "nodemon server.js",
     "init-db": "node initDb.js",
     "clean": "rimraf dist",
-    "copy-assets": "copyfiles -u 1 \"*.html\" \"*.css\" \"js/**/*\" \"images/**/*\" \"css/**/*\" dist/",
-    "build": "npm run clean && npm run copy-assets",
+    "make-dist": "mkdir dist",
+    "copy-html": "copyfiles -f \"*.html\" dist/",
+    "copy-css": "copyfiles -f \"*.css\" \"css/**/*\" dist/",
+    "copy-js": "copyfiles -f \"js/**/*\" dist/js/",
+    "copy-images": "copyfiles -f \"images/**/*\" dist/images/",
+    "copy-assets": "npm run make-dist && npm run copy-html && npm run copy-css && npm run copy-js && npm run copy-images",
+    "build": "cross-env NODE_ENV=production npm run clean && npm run copy-assets",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "serve": "serve dist"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -26,7 +32,9 @@
     "nodemon": "^2.0.22",
     "gh-pages": "^6.1.1",
     "rimraf": "^5.0.5",
-    "copyfiles": "^2.4.1"
+    "copyfiles": "^2.4.1",
+    "cross-env": "^7.0.3",
+    "serve": "^14.2.1"
   },
   "engines": {
     "node": ">=18.0.0"
