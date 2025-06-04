@@ -1,80 +1,118 @@
-# X SnackSmart
+# SNACKXMART
 
-A modern e-commerce website for snacks and beverages, with a secure admin panel for order management.
+A modern e-commerce platform for premium global snacks.
 
-## Features
+## Prerequisites
 
-- Modern and responsive design
-- Shopping cart functionality
-- Secure checkout process
-- Admin panel for order management
-- Cross-device order synchronization using GitHub Issues
-- Order export functionality
+- Node.js (v14 or higher)
+- PostgreSQL (v12 or higher)
+- npm or yarn
 
 ## Setup Instructions
 
-1. Clone the repository:
+1. **Clone the repository**
    ```bash
-   git clone https://github.com/av09-png/xsnackmart.git
-   cd xsnackmart
+   git clone https://github.com/yourusername/snackxmart.git
+   cd snackxmart
    ```
 
-2. Set up GitHub configuration:
-   - Copy `js/config.template.js` to `js/config.js`
-   - Create a GitHub Personal Access Token:
-     1. Go to GitHub Settings > Developer settings > Personal access tokens
-     2. Click "Generate new token (classic)"
-     3. Give it a name (e.g., "SnackSmart Orders")
-     4. Select the `repo` scope
-     5. Click "Generate token"
-     6. Copy the token
-   - Update `js/config.js` with your token and repository information:
-     ```javascript
-     const config = {
-         githubToken: 'YOUR_GITHUB_TOKEN',
-         githubRepo: 'your-username/your-repository',
-         githubApiUrl: 'https://api.github.com'
-     };
-     ```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-3. Deploy to GitHub Pages:
-   - Go to repository Settings > Pages
-   - Set source branch to `main`
-   - Set folder to `/ (root)`
-   - Click Save
+3. **Database Setup**
+   - Create a PostgreSQL database named 'snackxmart'
+   ```sql
+   CREATE DATABASE snackxmart;
+   ```
+   - The tables will be automatically created when you first run the application
 
-4. Access the website:
-   - Main website: `https://your-username.github.io/your-repository`
-   - Admin panel: `https://your-username.github.io/your-repository/admin-orders.html`
+4. **Environment Variables**
+   Create a .env file in the root directory with the following variables:
+   ```
+   PORT=3000
+   NODE_ENV=development
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=snackxmart
+   DB_USER=your_username
+   DB_PASSWORD=your_password
+   JWT_SECRET=your_jwt_secret_key
+   ```
 
-## Admin Access
+5. **Run the application**
+   ```bash
+   npm start
+   ```
 
-- Access the admin panel at `/admin-orders.html`
-- Default password: `av09`
+## Database Schema
 
-## Order Management
+The application uses the following tables:
 
-Orders are stored in two places:
-1. Browser's localStorage (for local access)
-2. GitHub Issues (for cross-device access)
+### Customers
+- id (SERIAL PRIMARY KEY)
+- first_name (VARCHAR)
+- last_name (VARCHAR)
+- email (VARCHAR)
+- phone (VARCHAR)
+- address (VARCHAR)
+- city (VARCHAR)
+- province (VARCHAR)
+- postal_code (VARCHAR)
+- shipping_method (VARCHAR)
+- delivery_instructions (TEXT)
+- created_at (TIMESTAMP)
 
-The admin panel combines orders from both sources and removes duplicates.
+### Orders
+- id (SERIAL PRIMARY KEY)
+- order_number (VARCHAR)
+- customer_id (INTEGER, FOREIGN KEY)
+- items (JSONB)
+- subtotal (DECIMAL)
+- tax (DECIMAL)
+- total (DECIMAL)
+- shipping_method (VARCHAR)
+- payment_method (VARCHAR)
+- status (VARCHAR)
+- created_at (TIMESTAMP)
 
-## Development
+## API Endpoints
 
-To modify the website:
-1. Clone the repository
-2. Make your changes
-3. Test locally using a web server
-4. Commit and push changes
-5. GitHub Pages will automatically update
+### Customer Endpoints
+- POST /api/save-customer - Save customer information
+- GET /api/customer/:id - Get customer details
 
-## Security Notes
+### Order Endpoints
+- POST /api/place-order - Place a new order
+- GET /api/order/:id - Get order details
+- GET /api/orders - List all orders
 
-- Keep your GitHub token secure and never commit it to the repository
-- Change the admin password in `admin-orders.html` before deployment
-- Consider implementing proper authentication for production use
+## Common Issues and Solutions
+
+1. **Database Connection Issues**
+   - Make sure PostgreSQL is running
+   - Verify database credentials in .env file
+   - Check if database exists and user has proper permissions
+
+2. **Port Already in Use**
+   - Change the PORT in .env file
+   - Kill the process using the current port
+
+3. **Table Creation Fails**
+   - Run the following command to manually create tables:
+   ```bash
+   node initDb.js
+   ```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 
-MIT License - Feel free to use and modify for your own projects. 
+This project is licensed under the MIT License - see the LICENSE file for details 

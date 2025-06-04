@@ -281,133 +281,76 @@ async function handlePlaceOrder() {
         placeOrderBtn.disabled = true;
         placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         
-        // Generate order number
-        const orderNumber = Math.random().toString(36).substr(2, 9).toUpperCase();
-        console.log('Generated order number:', orderNumber);
-        
         // Get cart data
         const cart = JSON.parse(localStorage.getItem('checkoutCart') || '{}');
         console.log('Cart data:', cart);
         
+        // Get customer ID from the most recent save
+        const customerResponse = await fetch('http://localhost:3000/api/save-customer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                firstName: checkoutState.shippingInfo.firstName,
+                lastName: checkoutState.shippingInfo.lastName,
+                email: checkoutState.shippingInfo.email,
+                phone: checkoutState.shippingInfo.phone,
+                address: checkoutState.shippingInfo.address,
+                city: checkoutState.shippingInfo.city,
+                province: checkoutState.shippingInfo.province,
+                postalCode: checkoutState.shippingInfo.postalCode,
+                shippingMethod: checkoutState.shippingInfo.shippingMethod,
+                deliveryInstructions: checkoutState.shippingInfo.deliveryInstructions || ''
+            })
+        });
+
+        const customerResult = await customerResponse.json();
+        if (!customerResult.success) {
+            throw new Error('Failed to save customer information');
+        }
+
         // Prepare order data
         const orderData = {
-            id: orderNumber,
-            fullName: `${checkoutState.shippingInfo.firstName} ${checkoutState.shippingInfo.lastName}`,
-            email: checkoutState.shippingInfo.email,
-            phone: checkoutState.shippingInfo.phone,
-            address: `${checkoutState.shippingInfo.address}, ${checkoutState.shippingInfo.city}, ${checkoutState.shippingInfo.province} ${checkoutState.shippingInfo.postalCode}`,
-            deliveryInstructions: checkoutState.shippingInfo.deliveryInstructions || '',
+            customerId: customerResult.customerId,
             items: cart.items || [],
-            total: cart.total || 0,
             subtotal: cart.subtotal || 0,
             tax: cart.tax || 0,
-            timestamp: new Date().toISOString(),
-            status: 'Pending',
-            paymentMethod: checkoutState.paymentInfo.method,
-            shippingMethod: checkoutState.shippingInfo.shippingMethod
+            total: cart.total || 0,
+            shippingMethod: checkoutState.shippingInfo.shippingMethod,
+            paymentMethod: checkoutState.paymentInfo.method
         };
         
         console.log('Order data prepared:', orderData);
 
-        try {
-            console.log('Creating order in GitHub...');
-            
-            // Create GitHub issue for the order
-            const issueTitle = `Order #${orderNumber}`;
-            const issueBody = `
-### Order Details
-- **Order ID:** ${orderNumber}
-- **Customer:** ${checkoutState.shippingInfo.firstName} ${checkoutState.shippingInfo.lastName}
-- **Email:** ${checkoutState.shippingInfo.email}
-- **Phone:** ${checkoutState.shippingInfo.phone}
-- **Address:** ${checkoutState.shippingInfo.address}, ${checkoutState.shippingInfo.city}, ${checkoutState.shippingInfo.province} ${checkoutState.shippingInfo.postalCode}
-${checkoutState.shippingInfo.deliveryInstructions ? `- **Delivery Instructions:** ${checkoutState.shippingInfo.deliveryInstructions}` : ''}
-- **Date:** ${new Date().toLocaleString()}
+        // Place order
+        const response = await fetch('http://localhost:3000/api/place-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        });
 
-### Items
-${cart.items.map(item => `- ${item.name} x ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}`).join('\n')}
-
-### Totals
-- **Subtotal:** $${cart.subtotal.toFixed(2)}
-- **Tax:** $${cart.tax.toFixed(2)}
-- **Total:** $${cart.total.toFixed(2)}
-
-### Payment Details
-- **Method:** ${checkoutState.paymentInfo.method}
-- **Shipping Method:** ${checkoutState.shippingMethod}
-
-\`\`\`json
-${JSON.stringify({
-    id: orderNumber,
-    fullName: `${checkoutState.shippingInfo.firstName} ${checkoutState.shippingInfo.lastName}`,
-    email: checkoutState.shippingInfo.email,
-    phone: checkoutState.shippingInfo.phone,
-    address: `${checkoutState.shippingInfo.address}, ${checkoutState.shippingInfo.city}, ${checkoutState.shippingInfo.province} ${checkoutState.shippingInfo.postalCode}`,
-    items: cart.items,
-    subtotal: cart.subtotal,
-    tax: cart.tax,
-    total: cart.total,
-    timestamp: new Date().toISOString(),
-    paymentMethod: checkoutState.paymentInfo.method,
-    shippingMethod: checkoutState.shippingMethod
-}, null, 2)}
-\`\`\``;
-
-            const response = await fetch(`${config.githubApiUrl}/repos/${config.githubRepo}/issues`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Authorization': `token ${config.githubToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    title: issueTitle,
-                    body: issueBody,
-                    labels: ['order']
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`GitHub API error: ${await response.text()}`);
-            }
-
-            // Save to localStorage as backup
-            const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-            existingOrders.push({
-                id: orderNumber,
-                fullName: `${checkoutState.shippingInfo.firstName} ${checkoutState.shippingInfo.lastName}`,
-                email: checkoutState.shippingInfo.email,
-                phone: checkoutState.shippingInfo.phone,
-                address: `${checkoutState.shippingInfo.address}, ${checkoutState.shippingInfo.city}, ${checkoutState.shippingInfo.province} ${checkoutState.shippingInfo.postalCode}`,
-                items: cart.items,
-                subtotal: cart.subtotal,
-                tax: cart.tax,
-                total: cart.total,
-                timestamp: new Date().toISOString(),
-                paymentMethod: checkoutState.paymentInfo.method,
-                shippingMethod: checkoutState.shippingMethod,
-                source: 'local'
-            });
-            localStorage.setItem('orders', JSON.stringify(existingOrders));
-            
-            // Clear cart
-            localStorage.removeItem('cart');
-            localStorage.removeItem('checkoutCart');
-            
-            // Show success message
-            showNotification('Order placed successfully!', 'success');
-            
-            // Redirect to order confirmation
-            window.location.href = `order-confirmation.html?order=${orderNumber}`;
-            
-        } catch (error) {
-            console.error('Error placing order:', error);
-            showNotification('Error placing order. Please try again.', 'error');
+        const result = await response.json();
+        if (!result.success) {
+            throw new Error(result.message || 'Error placing order');
         }
+
+        // Clear cart
+        localStorage.removeItem('cart');
+        localStorage.removeItem('checkoutCart');
+        
+        // Show success message
+        showNotification('Order placed successfully!', 'success');
+        
+        // Redirect to order confirmation
+        window.location.href = `order-confirmation.html?order=${result.orderNumber}`;
         
     } catch (error) {
         console.error('Error placing order:', error);
         showNotification('Error placing order. Please try again.', 'error');
+        const placeOrderBtn = document.getElementById('place-order-btn');
         placeOrderBtn.disabled = false;
         placeOrderBtn.innerHTML = 'Place Order <i class="fas fa-check"></i>';
     }

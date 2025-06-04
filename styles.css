@@ -43,43 +43,65 @@ body {
 }
 
 .logo-svg {
-    height: 40px;
-    display: flex;
-    align-items: center;
+    width: 200px;
+    height: 60px;
 }
 
 .logo-text {
-    font-family: 'Segoe UI', sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-}
-
-.x-letter {
-    fill: var(--accent-color);
-    font-size: 1.8em;
-    font-weight: 900;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
 
 .snacksmart-text {
-    fill: var(--primary-color);
-    font-size: 1.5em;
+    fill: #1a1a1a;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
-.logo-dot {
-    fill: var(--accent-color);
+/* Special styling for the X */
+.x-letter {
+    font-size: 42px;
+    font-weight: 800;
+    fill: url(#x-gradient);
+    transform-origin: center;
+    animation: pulseX 2s infinite;
+    filter: drop-shadow(0 0 3px rgba(255, 191, 0, 0.5));
+}
+
+@keyframes pulseX {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Add hover effect to logo */
+.logo:hover .x-letter {
+    animation: spinX 0.5s ease-out;
+}
+
+@keyframes spinX {
+    0% { transform: scale(1) rotate(0deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+
+.logo:hover .logo-text {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
 }
 
 .logo-underline {
-    fill: none;
-    stroke: var(--accent-color);
+    stroke: #1a1a1a;
     stroke-width: 2;
     stroke-linecap: round;
-    stroke-dasharray: 100;
-    stroke-dashoffset: 100;
-    animation: drawUnderline 1s ease forwards;
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: draw 1s ease forwards;
 }
 
-@keyframes drawUnderline {
+@keyframes draw {
     to {
         stroke-dashoffset: 0;
     }
