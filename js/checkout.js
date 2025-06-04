@@ -275,6 +275,7 @@ function updateReviewSection() {
 async function handlePlaceOrder() {
     try {
         console.log('Starting order placement...');
+        const config = window.SNACKXMART_CONFIG;
         
         // Show loading state
         const placeOrderBtn = document.getElementById('place-order-btn');
@@ -289,7 +290,7 @@ async function handlePlaceOrder() {
         console.log('Cart data:', cart);
         
         // Get customer ID from the most recent save
-        const customerResponse = await fetch('/api/save-customer', {
+        const customerResponse = await fetch(`${config.apiBaseUrl}${config.endpoints.saveCustomer}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -336,11 +337,11 @@ async function handlePlaceOrder() {
         console.log('Order data prepared:', orderData);
 
         // Place order with retry logic
-        let retries = 3;
+        let retries = config.orderConfig.maxRetries;
         let orderResponse;
         while (retries > 0) {
             try {
-                orderResponse = await fetch('/api/place-order', {
+                orderResponse = await fetch(`${config.apiBaseUrl}${config.endpoints.placeOrder}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -351,7 +352,7 @@ async function handlePlaceOrder() {
             } catch (error) {
                 retries--;
                 if (retries === 0) throw error;
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+                await new Promise(resolve => setTimeout(resolve, config.orderConfig.retryDelay));
             }
         }
 
@@ -384,6 +385,8 @@ async function handlePlaceOrder() {
             errorMessage += 'Please complete all required shipping and payment information.';
         } else if (error.message.includes('Server error')) {
             errorMessage += 'Server error occurred. Please try again later.';
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            errorMessage += 'Network connection error. Please check your internet connection and try again.';
         } else {
             errorMessage += 'Please try again or contact support if the issue persists.';
         }
