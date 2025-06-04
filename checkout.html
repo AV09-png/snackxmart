@@ -103,6 +103,75 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Add loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading-spinner i {
+            font-size: 24px;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        .loading-spinner p {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .form-feedback {
+            display: none;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .form-feedback.error {
+            color: #dc3545;
+        }
+
+        .form-feedback.success {
+            color: #28a745;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group .validation-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+        }
+
+        .input-group.valid .validation-icon.valid {
+            display: block;
+            color: #28a745;
+        }
+
+        .input-group.invalid .validation-icon.invalid {
+            display: block;
+            color: #dc3545;
+        }
     </style>
 </head>
 <body>
@@ -342,15 +411,74 @@
 
     <div id="checkout-notification" class="checkout-notification"></div>
 
+    <!-- Add loading overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p id="loading-message">Processing...</p>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/checkout.js"></script>
     <script>
+        // Show/hide loading overlay
+        function showLoading(message = 'Processing...') {
+            document.getElementById('loading-message').textContent = message;
+            document.getElementById('loading-overlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        // Show field-level feedback
+        function showFieldFeedback(fieldId, message, isError = false) {
+            const field = document.getElementById(fieldId);
+            const feedbackId = `${fieldId}-feedback`;
+            let feedbackEl = document.getElementById(feedbackId);
+            
+            if (!feedbackEl) {
+                feedbackEl = document.createElement('div');
+                feedbackEl.id = feedbackId;
+                feedbackEl.className = `form-feedback ${isError ? 'error' : 'success'}`;
+                field.parentNode.appendChild(feedbackEl);
+            }
+
+            feedbackEl.textContent = message;
+            feedbackEl.style.display = 'block';
+            field.parentNode.classList.add(isError ? 'invalid' : 'valid');
+        }
+
+        // Clear field-level feedback
+        function clearFieldFeedback(fieldId) {
+            const feedbackEl = document.getElementById(`${fieldId}-feedback`);
+            if (feedbackEl) {
+                feedbackEl.style.display = 'none';
+            }
+            const field = document.getElementById(fieldId);
+            field.parentNode.classList.remove('valid', 'invalid');
+        }
+
         // Function to save customer information
         async function saveCustomerInfo() {
             const config = window.SNACKXMART_CONFIG;
             const form = document.getElementById('shipping-form');
+            
+            // Clear previous feedback
+            Array.from(form.elements).forEach(element => {
+                if (element.id) {
+                    clearFieldFeedback(element.id);
+                }
+            });
+
             if (!form.checkValidity()) {
+                Array.from(form.elements).forEach(element => {
+                    if (element.id && !element.validity.valid) {
+                        showFieldFeedback(element.id, element.validationMessage, true);
+                    }
+                });
                 return;
             }
 
@@ -368,6 +496,8 @@
             };
 
             try {
+                showLoading('Saving customer information...');
+                
                 // Use retry logic for network resilience
                 let retries = config.orderConfig.maxRetries;
                 let response;
@@ -397,6 +527,13 @@
                 if (result.success) {
                     console.log('Customer information saved successfully');
                     showNotification('Information saved successfully', 'success');
+                    
+                    // Show success feedback for each field
+                    Object.keys(customerData).forEach(key => {
+                        if (document.getElementById(key)) {
+                            showFieldFeedback(key, 'Validated', false);
+                        }
+                    });
                 } else {
                     throw new Error(result.message || 'Failed to save customer information');
                 }
@@ -413,6 +550,8 @@
                 }
                 
                 showNotification(errorMessage, 'error');
+            } finally {
+                hideLoading();
             }
         }
 
@@ -431,6 +570,15 @@
                 option.textContent = details.label;
                 shippingSelect.appendChild(option);
             });
+
+            // Update shipping cost display when method changes
+            shippingSelect.addEventListener('change', function() {
+                const selectedMethod = this.value;
+                const shippingDetails = config.shipping[selectedMethod];
+                document.getElementById('summary-shipping').textContent = 
+                    shippingDetails.cost === 0 ? 'Free' : `$${shippingDetails.cost.toFixed(2)}`;
+                updateOrderSummary();
+            });
         }
 
         // Add event listeners
@@ -439,9 +587,29 @@
             saveCustomerInfo();
         });
 
-        // Initialize shipping methods
+        // Initialize shipping methods and form validation
         document.addEventListener('DOMContentLoaded', function() {
             updateShippingMethods();
+            
+            // Add validation icons to form fields
+            const formGroups = document.querySelectorAll('.form-group');
+            formGroups.forEach(group => {
+                const input = group.querySelector('input, select');
+                if (input) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'input-group';
+                    input.parentNode.insertBefore(wrapper, input);
+                    wrapper.appendChild(input);
+                    
+                    const validIcon = document.createElement('i');
+                    validIcon.className = 'fas fa-check validation-icon valid';
+                    wrapper.appendChild(validIcon);
+                    
+                    const invalidIcon = document.createElement('i');
+                    invalidIcon.className = 'fas fa-times validation-icon invalid';
+                    wrapper.appendChild(invalidIcon);
+                }
+            });
         });
     </script>
 </body>
