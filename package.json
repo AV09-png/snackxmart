@@ -1,55 +1,22 @@
 {
   "name": "snackxmart",
   "version": "1.0.0",
-  "description": "SNACKXMART e-commerce platform",
-  "main": "server.js",
+  "description": "SNACKXMART - Your Online Snack Marketplace",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "init-db": "node initDb.js",
     "clean": "rimraf dist",
-    "make-dist": "mkdir dist",
+    "prebuild": "npm run clean",
+    "build": "npm run copy-html && npm run copy-css && npm run copy-js && npm run copy-images",
     "copy-html": "copyfiles -f \"*.html\" dist/",
-    "copy-css": "copyfiles -f \"*.css\" \"css/**/*\" dist/",
+    "copy-css": "copyfiles -f \"css/**/*\" dist/css/",
     "copy-js": "copyfiles -f \"js/**/*\" dist/js/",
     "copy-images": "copyfiles -f \"images/**/*\" dist/images/",
-    "copy-assets": "npm run make-dist && npm run copy-html && npm run copy-css && npm run copy-js && npm run copy-images",
-    "build": "cross-env NODE_ENV=production npm run clean && npm run copy-assets",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
-    "serve": "serve dist"
+    "start": "serve dist"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "jsonwebtoken": "^9.0.0",
-    "pg": "^8.10.0",
-    "uuid": "^9.0.0"
+    "serve": "^14.0.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22",
-    "gh-pages": "^6.1.1",
-    "rimraf": "^5.0.5",
     "copyfiles": "^2.4.1",
-    "cross-env": "^7.0.3",
-    "serve": "^14.2.1"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "homepage": "https://av09-png.github.io/snackxmart",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AV09-png/snackxmart.git"
-  },
-  "keywords": [
-    "ecommerce",
-    "snacks",
-    "food",
-    "online-store"
-  ],
-  "author": "",
-  "license": "MIT"
+    "rimraf": "^5.0.0"
+  }
 }
