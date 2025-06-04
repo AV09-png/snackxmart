@@ -348,6 +348,7 @@
     <script>
         // Function to save customer information
         async function saveCustomerInfo() {
+            const config = window.SNACKXMART_CONFIG;
             const form = document.getElementById('shipping-form');
             if (!form.checkValidity()) {
                 return;
@@ -367,32 +368,80 @@
             };
 
             try {
-                const response = await fetch('http://localhost:3000/api/save-customer', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(customerData)
-                });
+                // Use retry logic for network resilience
+                let retries = config.orderConfig.maxRetries;
+                let response;
+
+                while (retries > 0) {
+                    try {
+                        response = await fetch(`${config.apiBaseUrl}${config.endpoints.saveCustomer}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(customerData)
+                        });
+                        break;
+                    } catch (error) {
+                        retries--;
+                        if (retries === 0) throw error;
+                        await new Promise(resolve => setTimeout(resolve, config.orderConfig.retryDelay));
+                    }
+                }
+
+                if (!response.ok) {
+                    throw new Error('Server error: ' + (await response.text()));
+                }
 
                 const result = await response.json();
                 if (result.success) {
                     console.log('Customer information saved successfully');
-                    // You can add user feedback here (e.g., success message)
+                    showNotification('Information saved successfully', 'success');
                 } else {
-                    console.error('Error saving customer information');
-                    // You can add user feedback here (e.g., error message)
+                    throw new Error(result.message || 'Failed to save customer information');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                // You can add user feedback here (e.g., error message)
+                let errorMessage = 'Error saving information. ';
+                
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorMessage += 'Please check your internet connection and try again.';
+                } else if (error.message.includes('Server error')) {
+                    errorMessage += 'Server error occurred. Please try again later.';
+                } else {
+                    errorMessage += error.message || 'Please try again or contact support.';
+                }
+                
+                showNotification(errorMessage, 'error');
             }
         }
 
-        // Add event listener to the form
+        // Update shipping method options based on config
+        function updateShippingMethods() {
+            const config = window.SNACKXMART_CONFIG;
+            const shippingSelect = document.getElementById('shipping-method');
+            
+            // Clear existing options
+            shippingSelect.innerHTML = '';
+            
+            // Add options from config
+            Object.entries(config.shipping).forEach(([method, details]) => {
+                const option = document.createElement('option');
+                option.value = method;
+                option.textContent = details.label;
+                shippingSelect.appendChild(option);
+            });
+        }
+
+        // Add event listeners
         document.getElementById('shipping-form').addEventListener('submit', function(e) {
             e.preventDefault();
             saveCustomerInfo();
+        });
+
+        // Initialize shipping methods
+        document.addEventListener('DOMContentLoaded', function() {
+            updateShippingMethods();
         });
     </script>
 </body>
