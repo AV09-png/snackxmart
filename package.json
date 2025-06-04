@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "init-db": "node initDb.js"
+    "init-db": "node initDb.js",
+    "build": "mkdir -p dist && cp -r *.html *.css js/ images/ dist/",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -18,11 +21,13 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^2.0.22",
+    "gh-pages": "^6.1.1"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0"
   },
+  "homepage": "https://yourusername.github.io/snackxmart",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yourusername/snackxmart.git"
